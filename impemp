@@ -1,0 +1,59 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+from noise import pnoise2
+
+def generate_perlin_noise(width, height, scale, octaves, persistence, lacunarity, seed):
+    noise = np.zeros((height, width))
+    for y in range(height):
+        for x in range(width):
+            noise[y][x] = pnoise2(x / scale,
+                                  y / scale,
+                                  octaves=octaves,
+                                  persistence=persistence,
+                                  lacunarity=lacunarity,
+                                  repeatx=1024,
+                                  repeaty=1024,
+                                  base=int(seed))
+    return noise
+
+def update(frame, im, noise_params):
+    seed = noise_params['seed'] + frame
+    noise = generate_perlin_noise(noise_params['width'],
+                                  noise_params['height'],
+                                  noise_params['scale'],
+                                  noise_params['octaves'],
+                                  noise_params['persistence'],
+                                  noise_params['lacunarity'],
+                                  seed)
+    im.set_array(noise)
+    return [im]
+
+def main():
+    width, height = 512, 512
+    scale = 50.0
+    octaves = 6
+    persistence = 0.5
+    lacunarity = 2.0
+    seed = np.random.randint(0, 200)
+
+    noise_params = {
+        'width': width,
+        'height': height,
+        'scale': scale,
+        'octaves': octaves,
+        'persistence': persistence,
+        'lacunarity': lacunarity,
+        'seed': seed
+    }
+
+    fig, ax = plt.subplots()
+    noise = generate_perlin_noise(width, height, scale, octaves, persistence, lacunarity, seed)
+    im = ax.imshow(noise, cmap='inferno', interpolation='lanczos')
+    ax.axis('off')
+
+    ani = FuncAnimation(fig, update, fargs=(im, noise_params), frames=400, interval=2, blit=True)
+    plt.show()
+
+if __name__ == "__main__":
+    main()
